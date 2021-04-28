@@ -21,6 +21,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
+      console.log("Load home page");
       this.reloadCourses();
   }
 
