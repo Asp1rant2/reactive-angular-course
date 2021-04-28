@@ -1,6 +1,6 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {Course} from '../model/course';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Course } from '../model/course';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -11,24 +11,27 @@ import {
   concatMap,
   switchMap,
   withLatestFrom,
-  concatAll, shareReplay
+  concatAll, shareReplay, throttle, throttleTime
 } from 'rxjs/operators';
-import {merge, fromEvent, Observable, concat} from 'rxjs';
-import {Lesson} from '../model/lesson';
-import {CoursesService} from '../services/courses.service';
+import { merge, fromEvent, Observable, concat } from 'rxjs';
+import { Lesson } from '../model/lesson';
+import { CoursesService } from '../services/courses.service';
+import { RxjsLoggingLevel, debug } from '../common/debug';
 
 
 @Component({
   selector: 'course',
   templateUrl: './search-lessons.component.html',
   styleUrls: ['./search-lessons.component.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchLessonsComponent implements OnInit {
+export class SearchLessonsComponent implements OnInit, AfterViewInit {
 
-  searchResults$ : Observable<Lesson[]>;
+  searchResults$: Observable<Lesson[]>;
 
-  activeLesson:Lesson;
+  activeLesson: Lesson;
+
+  @ViewChild("searchInput") searchInput:ElementRef;
 
   constructor(private coursesService: CoursesService) {
 
@@ -37,20 +40,31 @@ export class SearchLessonsComponent implements OnInit {
 
   ngOnInit() {
 
-
   }
 
-    onSearch(search:string) {
-        this.searchResults$  = this.coursesService.searchLessons(search);
-    }
+  ngAfterViewInit() {
+    console.log(this.searchInput);
+    fromEvent<any>(this.searchInput.nativeElement, 'keyup')
+      .pipe(
+        map(event => event.target.value),
+        startWith(''),
+        debug(RxjsLoggingLevel.INFO, "search"),
+        throttleTime(500)
+      )
+      .subscribe(console.log);
+  }
 
-    openLesson(lesson:Lesson) {
-      this.activeLesson = lesson;
-    }
+  onSearch(search: string) {
+    this.searchResults$ = this.coursesService.searchLessons(search);
+  }
 
-    onBackToSearch() {
-      this.activeLesson = null;
-    }
+  openLesson(lesson: Lesson) {
+    this.activeLesson = lesson;
+  }
+
+  onBackToSearch() {
+    this.activeLesson = null;
+  }
 
 }
 

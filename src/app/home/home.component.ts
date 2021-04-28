@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
-import {Course} from '../model/course';
-import {Observable} from 'rxjs';
-import {CoursesStore} from '../services/courses.store';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Course } from '../model/course';
+import { merge, Observable, of, throwError } from 'rxjs';
+import { CoursesStore } from '../services/courses.store';
+import { delay, filter, map, mapTo } from 'rxjs/operators';
 
 
 @Component({
@@ -21,15 +22,14 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-      console.log("Load home page");
-      this.reloadCourses();
+
   }
 
   reloadCourses() {
 
-      this.beginnerCourses$ = this.coursesStore.filterByCategory("BEGINNER");
+    this.beginnerCourses$ = this.coursesStore.filterByCategory("BEGINNER");
 
-      this.advancedCourses$ = this.coursesStore.filterByCategory("ADVANCED");
+    this.advancedCourses$ = this.coursesStore.filterByCategory("ADVANCED");
   }
 
 }
